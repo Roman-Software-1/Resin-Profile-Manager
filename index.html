@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resin Profile Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    ResinLab
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Resins</div>
+    <div class="sidebar-item si-active" id="sb-siraya" onclick="sbNav('siraya',this)">
+      <div class="sidebar-dot" style="background:var(--amber);"></div>
+      Siraya ABS-Like
+      <span class="sidebar-item-meta">2</span>
+    </div>
+    <div class="sidebar-item" id="sb-anycubic" onclick="sbNav('anycubic',this)">
+      <div class="sidebar-dot" style="background:var(--blue);"></div>
+      Anycubic HS v2
+      <span class="sidebar-item-meta">1</span>
+    </div>
+    <div class="sidebar-item" id="sb-tenacious" onclick="sbNav('tenacious',this)">
+      <div class="sidebar-dot" style="background:var(--purple);"></div>
+      Siraya Tenacious
+      <span class="sidebar-item-meta">0</span>
+    </div>
+    <div class="sidebar-add" onclick="showModal()">+ Add resin</div>
+  </div>
+  <div class="sidebar-section" style="margin-top:8px;">
+    <div class="sidebar-section-label">Quick links</div>
+    <div class="sidebar-item" id="sb-library" onclick="showPage('library');sbHighlight(this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Library
+    </div>
+    <div class="sidebar-item" id="sb-wizard" onclick="showPage('wizard');sbHighlight(this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+      Calibration wizard
+    </div>
+  </div>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-footer">Photon M7 Pro · ResinLab v1</div>
+</aside>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-logo">
+    <div class="topnav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    <span>ResinLab</span>
+  </div>
+  <div class="topnav-breadcrumb" id="breadcrumb">
+    <span onclick="showPage('library')">Library</span>
+  </div>
+  <div class="topnav-right">
+    <button class="btn btn-accent" onclick="showModal()" style="font-size:14px; padding: 6px 14px;">+ New resin</button>
+  </div>
+</nav>
+
+<!-- PAGE: LIBRARY -->
+<div class="page active" id="page-library">
+  <div class="page-header">
+    <div class="page-title" style="font-size:30px;">Resin library</div>
+    <div class="page-sub" style="font-size:17px;">Your calibrated resin profiles and settings</div>
+  </div>
+
+  <!-- Stats row -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px;">
+    <div style="background: var(--bg3); border-radius: var(--radius); padding: 16px;">
+      <div style="font-size: 14px; color: var(--text3); margin-bottom: 4px;">Total resins</div>
+      <div style="font-size: 32px; font-weight: 700; font-family: var(--mono);">3</div>
+    </div>
+    <div style="background: var(--bg3); border-radius: var(--radius); padding: 16px;">
+      <div style="font-size: 14px; color: var(--text3); margin-bottom: 4px;">Layer profiles</div>
+      <div style="font-size: 32px; font-weight: 700; font-family: var(--mono);">5</div>
+    </div>
+    <div style="background: var(--bg3); border-radius: var(--radius); padding: 16px;">
+      <div style="font-size: 14px; color: var(--text3); margin-bottom: 4px;">Calibrated</div>
+      <div style="font-size: 32px; font-weight: 700; font-family: var(--mono); color: var(--green);">3</div>
+    </div>
+    <div style="background: var(--bg3); border-radius: var(--radius); padding: 16px;">
+      <div style="font-size: 14px; color: var(--text3); margin-bottom: 4px;">In progress</div>
+      <div style="font-size: 32px; font-weight: 700; font-family: var(--mono); color: var(--amber);">2</div>
+    </div>
+  </div>
+
+  <div class="resin-grid" style="grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;">
+    <!-- Card 1: Siraya ABS-Like -->
+    <div class="resin-card" onclick="showPage('profile')" style="padding:0;overflow:hidden;">
+      <div class="resin-card-accent" style="background: var(--amber);"></div>
+      <!-- Color banner / image area -->
+      <div style="height:80px;background:linear-gradient(135deg,#6b6b6b 0%,#8a8a8a 40%,#5a5a5a 100%);display:flex;align-items:flex-end;padding:12px 20px;position:relative;">
+        <div style="position:absolute;top:12px;right:16px;"><span class="status-badge status-calibrated" style="font-size:14px;padding:4px 12px;">Calibrated</span></div>
+        <div style="width:44px;height:44px;border-radius:10px;background:#777;border:3px solid var(--bg2);margin-bottom:-22px;position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+      </div>
+      <div style="padding:28px 20px 20px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div>
+            <div class="resin-card-name" style="font-size:20px;">Siraya Tech ABS-Like</div>
+            <div class="resin-card-brand" style="font-size:15px;margin-top:3px;">Siraya Tech · ABS-Like · Gray</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:14px;font-size:15px;color:var(--text2);">
+          <div><span style="color:var(--text3);">Density:</span> 1.10 g/ml</div>
+          <div><span style="color:var(--text3);">Cost:</span> $36/kg</div>
+        </div>
+        <div class="resin-card-heights" style="margin-top:12px;">
+          <span class="height-pill" style="font-size:14px;padding:4px 12px;">0.05mm</span>
+          <span class="height-pill" style="font-size:14px;padding:4px 12px;">0.03mm</span>
+        </div>
+        <div class="resin-card-meta" style="font-size:14px;margin-top:12px;">
+          <span>Updated 2 days ago</span>
+          <span>12 notes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Anycubic High Speed v2 -->
+    <div class="resin-card" onclick="showPage('profile')" style="padding:0;overflow:hidden;">
+      <div class="resin-card-accent" style="background: var(--blue);"></div>
+      <div style="height:80px;background:linear-gradient(135deg,#1a1a1a 0%,#2c2c2c 40%,#111 100%);display:flex;align-items:flex-end;padding:12px 20px;position:relative;">
+        <div style="position:absolute;top:12px;right:16px;"><span class="status-badge status-progress" style="font-size:14px;padding:4px 12px;">In progress</span></div>
+        <div style="width:44px;height:44px;border-radius:10px;background:#222;border:3px solid var(--bg2);margin-bottom:-22px;position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+      </div>
+      <div style="padding:28px 20px 20px;">
+        <div>
+          <div class="resin-card-name" style="font-size:20px;">Anycubic High Speed v2</div>
+          <div class="resin-card-brand" style="font-size:15px;margin-top:3px;">Anycubic · High Speed · Black</div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:14px;font-size:15px;color:var(--text2);">
+          <div><span style="color:var(--text3);">Density:</span> 1.05 g/ml</div>
+          <div><span style="color:var(--text3);">Cost:</span> $28/kg</div>
+        </div>
+        <div class="resin-card-heights" style="margin-top:12px;">
+          <span class="height-pill" style="font-size:14px;padding:4px 12px;">0.05mm</span>
+        </div>
+        <div class="resin-card-meta" style="font-size:14px;margin-top:12px;">
+          <span>Step 3 of 6</span>
+          <span>4 notes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Siraya Tenacious -->
+    <div class="resin-card" onclick="showPage('profile')" style="padding:0;overflow:hidden;">
+      <div class="resin-card-accent" style="background: var(--purple);"></div>
+      <div style="height:80px;background:linear-gradient(135deg,#d4c8a8 0%,#e8dcc0 40%,#c0b498 100%);display:flex;align-items:flex-end;padding:12px 20px;position:relative;">
+        <div style="position:absolute;top:12px;right:16px;"><span class="status-badge status-new" style="font-size:14px;padding:4px 12px;">New</span></div>
+        <div style="width:44px;height:44px;border-radius:10px;background:#c8bc9e;border:3px solid var(--bg2);margin-bottom:-22px;position:relative;z-index:2;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+      </div>
+      <div style="padding:28px 20px 20px;">
+        <div>
+          <div class="resin-card-name" style="font-size:20px;">Siraya Tech Tenacious</div>
+          <div class="resin-card-brand" style="font-size:15px;margin-top:3px;">Siraya Tech · Flexible · Clear</div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:14px;font-size:15px;color:var(--text2);">
+          <div><span style="color:var(--text3);">Density:</span> 1.08 g/ml</div>
+          <div><span style="color:var(--text3);">Cost:</span> $45/kg</div>
+        </div>
+        <div class="resin-card-heights" style="margin-top:12px;">
+          <span class="height-pill" style="font-size:14px;padding:4px 12px;border:1px dashed var(--border);background:transparent;">No profiles yet</span>
+        </div>
+        <div class="resin-card-meta" style="font-size:14px;margin-top:12px;">
+          <span>Added today</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add card -->
+    <div class="add-card" onclick="showModal()" style="min-height:220px;">
+      <div class="add-card-icon" style="width:48px;height:48px;font-size:30px;">+</div>
+      <div class="add-card-text" style="font-size:16px;">Add new resin</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: PROFILE DETAIL -->
+<div class="page" id="page-profile">
+  <div class="profile-back" onclick="showPage('library')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to library
+  </div>
+
+  <div class="profile-hero">
+    <div class="profile-color-swatch" style="background: linear-gradient(135deg, #777, #5a5a5a);"></div>
+    <div class="profile-hero-info">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="profile-hero-name" style="font-size:28px;">Siraya Tech ABS-Like</div>
+        <button class="btn btn-secondary" onclick="showEditModal()" style="font-size:14px;padding:4px 12px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;margin-right:3px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+      </div>
+      <div class="profile-hero-meta" style="font-size:16px;margin-top:4px;gap:16px;">
+        <span>ABS-Like · Gray</span>
+        <span>1.10 g/ml</span>
+        <span>$36/kg</span>
+        <span class="status-badge status-calibrated" style="font-size: 14px;">Calibrated</span>
+      </div>
+    </div>
+    <button class="btn btn-secondary" style="font-size: 15px;" onclick="showPage('wizard')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align: -2px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+      Run wizard
+    </button>
+  </div>
+
+  <!-- Layer height selector -->
+  <div class="height-selector">
+    <button class="height-btn active" onclick="selectHeight(this)">0.05mm</button>
+    <button class="height-btn" onclick="selectHeight(this)">0.03mm</button>
+    <button class="height-btn add-height">+ Add height</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="selectTab(this, 'tab-slicer')">Slicer settings</div>
+    <div class="tab" onclick="selectTab(this, 'tab-tolerance')">Tolerance data</div>
+    <div class="tab" onclick="selectTab(this, 'tab-dimensional')">Dimensional</div>
+    <div class="tab" onclick="selectTab(this, 'tab-notes')">Notes &amp; log</div>
+  </div>
+
+  <!-- TAB: Slicer Settings -->
+  <div class="tab-panel active" id="tab-slicer">
+
+    <!-- Exposure & Layer section -->
+    <div class="settings-group">
+      <div class="settings-group-title">Exposure &amp; layers</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div class="settings-row" style="grid-template-columns:1fr 1fr;">
+            <div class="setting-field">
+              <div class="setting-label">Layer height</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="0.050" style="flex:1"/><span class="setting-unit" style="margin:0">mm</span></div>
+            </div>
+            <div class="setting-field">
+              <div class="setting-label">Bottom layer count</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="3" style="flex:1"/></div>
+            </div>
+          </div>
+          <div class="settings-row" style="grid-template-columns:1fr 1fr;margin-top:6px;">
+            <div class="setting-field">
+              <div class="setting-label">Exposure time</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="2.200" style="flex:1"/><span class="setting-unit" style="margin:0">s</span></div>
+            </div>
+            <div class="setting-field">
+              <div class="setting-label">Bottom exposure time</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="25.000" style="flex:1"/><span class="setting-unit" style="margin:0">s</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="settings-row" style="grid-template-columns:1fr 1fr;">
+            <div class="setting-field">
+              <div class="setting-label">Transition layer count</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="10" style="flex:1"/></div>
+            </div>
+            <div class="setting-field">
+              <div class="setting-label">Transition type</div>
+              <select class="setting-input" style="appearance:auto;padding:7px 10px;"><option>Linear</option><option>Exponential</option></select>
+            </div>
+          </div>
+          <div class="settings-row" style="grid-template-columns:1fr;margin-top:6px;">
+            <div class="setting-field">
+              <div class="setting-label">Light-off delay</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="1.300" style="flex:1;max-width:160px"/><span class="setting-unit" style="margin:0">s</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Motion section: mirrors ChituBox two-stage layout -->
+    <div class="settings-group">
+      <div class="settings-group-title">Motion — lift &amp; retract</div>
+      <div style="display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:center;font-size:14px;">
+
+        <!-- Header row -->
+        <div></div>
+        <div style="display:grid;grid-template-columns:1fr 20px 1fr 50px;gap:4px;align-items:center;">
+          <div style="text-align:center;font-size:13px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Stage 1 (slow)</div>
+          <div></div>
+          <div style="text-align:center;font-size:13px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Stage 2 (fast)</div>
+          <div></div>
+        </div>
+
+        <!-- Bottom lift distance -->
+        <div style="color:var(--text2);font-weight:500;">Bottom lift dist.</div>
+        <div style="display:grid;grid-template-columns:1fr 20px 1fr 50px;gap:4px;align-items:center;">
+          <input class="setting-input" value="5.000" style="text-align:center"/>
+          <span style="text-align:center;color:var(--text4);font-weight:600;">+</span>
+          <input class="setting-input" value="3.000" style="text-align:center"/>
+          <span class="setting-unit" style="margin:0">mm</span>
+        </div>
+
+        <!-- Lifting distance -->
+        <div style="color:var(--text2);font-weight:500;">Lifting distance</div>
+        <div style="display:grid;grid-template-columns:1fr 20px 1fr 50px;gap:4px;align-items:center;">
+          <input class="setting-input" value="5.000" style="text-align:center"/>
+          <span style="text-align:center;color:var(--text4);font-weight:600;">+</span>
+          <input class="setting-input" value="7.000" style="text-align:center"/>
+          <span class="setting-unit" style="margin:0">mm</span>
+        </div>
+
+        <!-- Bottom lift speed -->
+        <div style="color:var(--text2);font-weight:500;">Bottom lift speed</div>
+        <div style="display:grid;grid-template-columns:1fr 20px 1fr 50px;gap:4px;align-items:center;">
+          <input class="setting-input" value="60.000" style="text-align:center"/>
+          <span style="text-align:center;color:var(--text4);font-weight:600;">+</span>
+          <input class="setting-input" value="360.000" style="text-align:center"/>
+          <span class="setting-unit" style="margin:0">mm/min</span>
+        </div>
+
+        <!-- Lifting speed -->
+        <div style="color:var(--text2);font-weight:500;">Lifting speed</div>
+        <div style="display:grid;grid-template-columns:1fr 20px 1fr 50px;gap:4px;align-items:center;">
+          <input class="setting-input" value="120.000" style="text-align:center"/>
+          <span style="text-align:center;color:var(--text4);font-weight:600;">+</span>
+          <input class="setting-input" value="360.000" style="text-align:center"/>
+          <span class="setting-unit" style="margin:0">mm/min</span>
+        </div>
+
+        <!-- Bottom retract speed -->
+        <div style="color:var(--text2);font-weight:500;">Bottom retract speed</div>
+        <div style="display:grid;grid-template-columns:1fr 20px 1fr 50px;gap:4px;align-items:center;">
+          <input class="setting-input" value="360.000" style="text-align:center"/>
+          <span style="text-align:center;color:var(--text4);font-weight:600;">+</span>
+          <input class="setting-input" value="120.000" style="text-align:center"/>
+          <span class="setting-unit" style="margin:0">mm/min</span>
+        </div>
+
+        <!-- Retract speed -->
+        <div style="color:var(--text2);font-weight:500;">Retract speed</div>
+        <div style="display:grid;grid-template-columns:1fr 20px 1fr 50px;gap:4px;align-items:center;">
+          <input class="setting-input" value="360.000" style="text-align:center"/>
+          <span style="text-align:center;color:var(--text4);font-weight:600;">+</span>
+          <input class="setting-input" value="120.000" style="text-align:center"/>
+          <span class="setting-unit" style="margin:0">mm/min</span>
+        </div>
+      </div>
+
+      <!-- Motion diagrams: Bottom Layer vs Normal Layer -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+        <div style="background:var(--bg3);border-radius:var(--radius);padding:14px;text-align:center;">
+          <svg viewBox="0 0 220 180" width="100%" style="max-width:220px;">
+            <rect x="70" y="10" width="80" height="14" rx="3" fill="var(--text3)" opacity="0.4"/>
+            <rect x="85" y="24" width="50" height="8" rx="2" fill="var(--text3)" opacity="0.3"/>
+            <rect x="60" y="32" width="100" height="10" rx="2" fill="var(--text2)"/>
+            <polygon points="55,50 75,42 75,50" fill="var(--blue)" opacity="0.7"/>
+            <polygon points="165,50 145,42 145,50" fill="var(--blue)" opacity="0.7"/>
+            <rect x="55" y="50" width="110" height="20" rx="2" fill="var(--blue)" opacity="0.35"/>
+            <line x1="110" y1="75" x2="110" y2="110" stroke="var(--text3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <polygon points="105,78 115,78 110,72" fill="var(--green)"/>
+            <polygon points="105,107 115,107 110,113" fill="var(--green)"/>
+            <text x="125" y="96" font-size="11" fill="var(--green)" font-family="var(--mono)" font-weight="500">60</text>
+            <line x1="110" y1="115" x2="110" y2="150" stroke="var(--text3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <polygon points="105,118 115,118 110,112" fill="var(--amber)"/>
+            <polygon points="105,147 115,147 110,153" fill="var(--amber)"/>
+            <text x="125" y="136" font-size="11" fill="var(--amber)" font-family="var(--mono)" font-weight="500">360</text>
+            <line x1="30" y1="155" x2="190" y2="155" stroke="var(--text4)" stroke-width="0.5" stroke-dasharray="5 3"/>
+          </svg>
+          <div style="font-size:14px;font-weight:600;color:var(--text2);margin-top:4px;">Bottom layer</div>
+          <div style="font-size:13px;color:var(--text3);">5 + 3mm lift · 60 → 360 mm/min</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:var(--radius);padding:14px;text-align:center;">
+          <svg viewBox="0 0 220 180" width="100%" style="max-width:220px;">
+            <rect x="70" y="10" width="80" height="14" rx="3" fill="var(--text3)" opacity="0.4"/>
+            <rect x="85" y="24" width="50" height="8" rx="2" fill="var(--text3)" opacity="0.3"/>
+            <rect x="40" y="32" width="140" height="10" rx="2" fill="var(--text2)"/>
+            <rect x="35" y="42" width="150" height="6" rx="1" fill="var(--blue)" opacity="0.25"/>
+            <rect x="35" y="48" width="150" height="6" rx="1" fill="var(--blue)" opacity="0.3"/>
+            <rect x="35" y="54" width="150" height="6" rx="1" fill="var(--blue)" opacity="0.35"/>
+            <rect x="35" y="60" width="150" height="6" rx="1" fill="var(--blue)" opacity="0.4"/>
+            <line x1="110" y1="72" x2="110" y2="107" stroke="var(--text3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <polygon points="105,75 115,75 110,69" fill="var(--green)"/>
+            <polygon points="105,104 115,104 110,110" fill="var(--green)"/>
+            <text x="125" y="93" font-size="11" fill="var(--green)" font-family="var(--mono)" font-weight="500">120</text>
+            <line x1="110" y1="112" x2="110" y2="150" stroke="var(--text3)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <polygon points="105,115 115,115 110,109" fill="var(--amber)"/>
+            <polygon points="105,147 115,147 110,153" fill="var(--amber)"/>
+            <text x="125" y="134" font-size="11" fill="var(--amber)" font-family="var(--mono)" font-weight="500">360</text>
+            <line x1="30" y1="155" x2="190" y2="155" stroke="var(--text4)" stroke-width="0.5" stroke-dasharray="5 3"/>
+          </svg>
+          <div style="font-size:14px;font-weight:600;color:var(--text2);margin-top:4px;">Normal layer</div>
+          <div style="font-size:13px;color:var(--text3);">5 + 7mm lift · 120 → 360 mm/min</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced section -->
+    <div class="settings-group">
+      <div class="settings-group-title">Advanced</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div class="settings-row" style="grid-template-columns:1fr 1fr;">
+            <div class="setting-field">
+              <div class="setting-label">Bottom light PWM</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="255" style="flex:1"/><span style="color:var(--text4);font-size:14px;font-weight:500;">/255</span></div>
+            </div>
+            <div class="setting-field">
+              <div class="setting-label">Light PWM</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="255" style="flex:1"/><span style="color:var(--text4);font-size:14px;font-weight:500;">/255</span></div>
+            </div>
+          </div>
+          <div class="settings-row" style="grid-template-columns:1fr 1fr;margin-top:6px;">
+            <div class="setting-field">
+              <div class="setting-label">Picture grayscale</div>
+              <div style="display:flex;align-items:center;gap:6px;"><input class="setting-input" value="255" style="flex:1"/></div>
+            </div>
+            <div class="setting-field">
+              <div class="setting-label">Anti-aliasing</div>
+              <select class="setting-input" style="appearance:auto;padding:7px 10px;"><option>None</option><option>2x</option><option>4x</option><option>8x</option></select>
+            </div>
+          </div>
+        </div>
+        <div>
+          <!-- Compensation toggles -->
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--amber);"/> Shrinkage compensation
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);cursor:pointer;">
+              <input type="checkbox" style="width:16px;height:16px;accent-color:var(--amber);"/> Tolerance compensation
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);cursor:pointer;">
+              <input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--amber);"/> Bottom tolerance compensation
+            </label>
+          </div>
+          <!-- Bottom tolerance visual -->
+          <div style="display:flex;align-items:center;gap:16px;margin-top:10px;padding:10px 14px;background:var(--bg3);border-radius:var(--radius);">
+            <svg viewBox="0 0 60 60" width="48" height="48">
+              <rect x="5" y="5" width="50" height="50" rx="2" fill="none" stroke="var(--text4)" stroke-width="1" stroke-dasharray="3 2"/>
+              <circle cx="30" cy="30" r="14" fill="none" stroke="var(--text3)" stroke-width="1"/>
+              <circle cx="30" cy="30" r="11" fill="none" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="2 2"/>
+              <text x="20" y="48" font-size="9" fill="var(--text3)" font-family="var(--sans)">a</text>
+              <text x="44" y="28" font-size="9" fill="var(--text3)" font-family="var(--sans)">b</text>
+            </svg>
+            <div>
+              <div style="display:flex;gap:12px;align-items:center;">
+                <div class="setting-field" style="margin:0;">
+                  <div class="setting-label">a</div>
+                  <div style="display:flex;align-items:center;gap:4px;"><input class="setting-input" value="-0.200" style="width:80px;text-align:center"/><span class="setting-unit" style="margin:0">mm</span></div>
+                </div>
+                <div class="setting-field" style="margin:0;">
+                  <div class="setting-label">b</div>
+                  <div style="display:flex;align-items:center;gap:4px;"><input class="setting-input" value="-0.200" style="width:80px;text-align:center"/><span class="setting-unit" style="margin:0">mm</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Tolerance Data -->
+  <div class="tab-panel" id="tab-tolerance">
+
+    <!-- Fit description at TOP -->
+    <div class="tol-fit-desc" id="tolFitDesc" style="border-color:#2CA66E;background:rgba(44,166,110,0.06);margin-bottom:16px;">
+      <strong style="color:#2CA66E;">Loose running fit:</strong> Large clearance for free rotation and easy assembly. Parts slide together with no resistance. Use for: covers that drop into place, freely rotating shafts, parts that need to be assembled and disassembled by hand with zero effort. Good default when precision alignment doesn't matter.
+    </div>
+
+    <div class="tol-controls">
+      <div class="tol-ctrl-group">
+        <div class="tol-ctrl-label">Fit type</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:13px;color:var(--text4);font-weight:600;width:16px;text-align:right;">1</span>
+            <div class="tol-pills" id="tolFitPills">
+              <button class="tol-pill tp-active" style="background:#2CA66E;" onclick="tolSetFit(0,this)">Loose running</button>
+              <button class="tol-pill" onclick="tolSetFit(1,this)">Close running</button>
+            </div>
+            <span style="font-size:13px;color:var(--text4);margin-left:4px;">Clearance</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:13px;color:var(--text4);font-weight:600;width:16px;text-align:right;">2</span>
+              <button class="tol-pill" onclick="tolSetFit(2,this)">Transition / push</button>
+            <span style="font-size:13px;color:var(--text4);margin-left:4px;">Transition</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:13px;color:var(--text4);font-weight:600;width:16px;text-align:right;">3</span>
+              <button class="tol-pill" onclick="tolSetFit(3,this)">Interference / press</button>
+            <span style="font-size:13px;color:var(--text4);margin-left:4px;">Interference</span>
+          </div>
+        </div>
+      </div>
+      <div class="tol-ctrl-group">
+        <div class="tol-ctrl-label">Diameter</div>
+        <div class="tol-pills" id="tolDiaPills">
+          <button class="tol-pill tp-active" style="background:var(--text);color:#fff;" onclick="tolSetDia(0,this)">3mm</button>
+          <button class="tol-pill" onclick="tolSetDia(1,this)">5mm</button>
+          <button class="tol-pill" onclick="tolSetDia(2,this)">8mm</button>
+          <button class="tol-pill" onclick="tolSetDia(3,this)">12mm</button>
+          <button class="tol-pill" onclick="tolSetDia(4,this)">20mm</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tol-diagram">
+      <svg id="tolXsec" width="100%" height="360" viewBox="0 0 520 360" style="max-width:560px;"></svg>
+    </div>
+
+    <div class="tol-readout">
+      <div class="tol-stat">
+        <div class="tol-stat-label">Clearance / side</div>
+        <div class="tol-stat-val" id="tolStatCl">+0.25</div>
+        <div class="tol-stat-unit">mm</div>
+      </div>
+      <div class="tol-stat">
+        <div class="tol-stat-label">Total diametral gap</div>
+        <div class="tol-stat-val" id="tolStatGap">+0.50</div>
+        <div class="tol-stat-unit">mm on diameter</div>
+      </div>
+      <div class="tol-stat">
+        <div class="tol-stat-label">Effective hole</div>
+        <div class="tol-stat-val" id="tolStatHole">3.50</div>
+        <div class="tol-stat-unit">mm</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Dimensional -->
+  <div class="tab-panel" id="tab-dimensional">
+
+    <!-- Summary strip -->
+    <div class="summary-strip">
+      <div class="ss-block">
+        <div class="ss-label">Avg XY error</div>
+        <div class="ss-val dim-good">+0.09mm</div>
+        <div class="ss-sub">Slight oversize</div>
+      </div>
+      <div class="ss-block">
+        <div class="ss-label">Avg Z error</div>
+        <div class="ss-val dim-good">-0.02mm</div>
+        <div class="ss-sub">Within spec</div>
+      </div>
+      <div class="ss-block">
+        <div class="ss-label">Shrinkage</div>
+        <div class="ss-val" style="color:#e5e5e5;">0.5%</div>
+        <div class="ss-sub">Post-cure</div>
+      </div>
+      <div class="ss-block">
+        <div class="ss-label">Avg scale factor</div>
+        <div class="ss-val" style="color:#E8A838;">100.5%</div>
+        <div class="ss-sub">Overall</div>
+      </div>
+    </div>
+    <!-- Per-axis scale recommendations -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+      <div style="background:var(--bg3);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:14px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Recommended X scale</div>
+        <div style="font-size:26px;font-weight:700;font-family:var(--mono);color:var(--blue);margin-top:4px;">99.55%</div>
+        <div style="font-size:14px;color:var(--text3);margin-top:2px;">Exposure bleed correction</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:14px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Recommended Y scale</div>
+        <div style="font-size:26px;font-weight:700;font-family:var(--mono);color:var(--blue);margin-top:4px;">99.48%</div>
+        <div style="font-size:14px;color:var(--text3);margin-top:2px;">Exposure bleed correction</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:var(--radius);padding:14px 16px;">
+        <div style="font-size:14px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">Recommended Z scale</div>
+        <div style="font-size:26px;font-weight:700;font-family:var(--mono);color:var(--green);margin-top:4px;">100.1%</div>
+        <div style="font-size:14px;color:var(--text3);margin-top:2px;">Layer shrinkage correction</div>
+      </div>
+    </div>
+
+    <div class="dim-section-label">Build plate accuracy map — 20mm cubes</div>
+
+    <div class="plate-container">
+      <div class="plate-label plate-label-top">Back (away from you)</div>
+      <div class="plate-label plate-label-bottom">Front (toward you)</div>
+      <div class="plate-grid">
+        <!-- Row 1: Back-left, empty, Back-right -->
+        <div>
+          <div class="pos-card">
+            <div class="pos-name"><div class="pos-dot" style="background:var(--amber);"></div>Back-left</div>
+            <div class="pos-row"><span class="pos-axis">X</span><span class="pos-val">20.12<span class="pos-err dim-warn">+0.12</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Y</span><span class="pos-val">20.16<span class="pos-err dim-warn">+0.16</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Z</span><span class="pos-val">19.97<span class="pos-err dim-good">-0.03</span></span></div>
+          </div>
+        </div>
+        <div></div>
+        <div>
+          <div class="pos-card">
+            <div class="pos-name"><div class="pos-dot" style="background:var(--green);"></div>Back-right</div>
+            <div class="pos-row"><span class="pos-axis">X</span><span class="pos-val">20.07<span class="pos-err dim-good">+0.07</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Y</span><span class="pos-val">20.10<span class="pos-err dim-good">+0.10</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Z</span><span class="pos-val">19.99<span class="pos-err dim-good">-0.01</span></span></div>
+          </div>
+        </div>
+        <!-- Row 2: empty, Center, empty -->
+        <div></div>
+        <div>
+          <div class="pos-card center-card">
+            <div class="pos-name"><div class="pos-dot" style="background:var(--blue);"></div>Center</div>
+            <div class="pos-row"><span class="pos-axis">X</span><span class="pos-val">20.04<span class="pos-err dim-good">+0.04</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Y</span><span class="pos-val">20.06<span class="pos-err dim-good">+0.06</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Z</span><span class="pos-val">19.98<span class="pos-err dim-good">-0.02</span></span></div>
+          </div>
+        </div>
+        <div></div>
+        <!-- Row 3: Front-left, empty, Front-right -->
+        <div>
+          <div class="pos-card">
+            <div class="pos-name"><div class="pos-dot" style="background:var(--green);"></div>Front-left</div>
+            <div class="pos-row"><span class="pos-axis">X</span><span class="pos-val">20.08<span class="pos-err dim-good">+0.08</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Y</span><span class="pos-val">20.14<span class="pos-err dim-warn">+0.14</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Z</span><span class="pos-val">19.96<span class="pos-err dim-good">-0.04</span></span></div>
+          </div>
+        </div>
+        <div></div>
+        <div>
+          <div class="pos-card">
+            <div class="pos-name"><div class="pos-dot" style="background:var(--green);"></div>Front-right</div>
+            <div class="pos-row"><span class="pos-axis">X</span><span class="pos-val">20.05<span class="pos-err dim-good">+0.05</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Y</span><span class="pos-val">20.09<span class="pos-err dim-good">+0.09</span></span></div>
+            <div class="pos-row"><span class="pos-axis">Z</span><span class="pos-val">20.00<span class="pos-err dim-good">+0.00</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dim-section-label">Multi-size accuracy test</div>
+
+    <div class="ms-cube-viz">
+      <div class="ms-cube"><div class="ms-cube-box dim-good" style="width:24px;height:24px;border-color:var(--green);color:var(--green);">5</div><div class="ms-cube-label">5mm</div></div>
+      <div class="ms-cube"><div class="ms-cube-box dim-good" style="width:34px;height:34px;border-color:var(--green);color:var(--green);">10</div><div class="ms-cube-label">10mm</div></div>
+      <div class="ms-cube"><div class="ms-cube-box dim-good" style="width:48px;height:48px;border-color:var(--green);color:var(--green);">20</div><div class="ms-cube-label">20mm</div></div>
+      <div class="ms-cube"><div class="ms-cube-box dim-warn" style="width:66px;height:66px;border-color:var(--amber);color:var(--amber);">40</div><div class="ms-cube-label">40mm</div></div>
+    </div>
+
+    <div>
+      <div class="ms-row ms-header">
+        <span>Designed</span><span>Measured X</span><span>Measured Y</span><span style="text-align:center">Offset</span><span style="text-align:center">Error %</span>
+      </div>
+      <div class="ms-row">
+        <span class="ms-designed">5.00mm</span><span class="ms-measured">5.07mm</span><span class="ms-measured">5.09mm</span><span class="ms-offset dim-good">+0.08</span><span class="ms-pct">+1.60%</span>
+      </div>
+      <div class="ms-row">
+        <span class="ms-designed">10.00mm</span><span class="ms-measured">10.09mm</span><span class="ms-measured">10.11mm</span><span class="ms-offset dim-good">+0.10</span><span class="ms-pct">+1.00%</span>
+      </div>
+      <div class="ms-row">
+        <span class="ms-designed">20.00mm</span><span class="ms-measured">20.04mm</span><span class="ms-measured">20.06mm</span><span class="ms-offset dim-good">+0.05</span><span class="ms-pct">+0.25%</span>
+      </div>
+      <div class="ms-row">
+        <span class="ms-designed">40.00mm</span><span class="ms-measured">40.18mm</span><span class="ms-measured">40.22mm</span><span class="ms-offset dim-warn">+0.20</span><span class="ms-pct">+0.50%</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+      <div class="diag-badge offset-type">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Constant offset: ~+0.06mm/side
+      </div>
+      <div class="diag-badge scale-type">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        Proportional component detected
+      </div>
+    </div>
+    <div style="font-size: 14px; color: var(--text3); margin-top: 8px; line-height: 1.6;">
+      Error % decreases with size but offset grows — suggests both a fixed exposure bleed (~0.06mm/side) and slight proportional shrinkage. Apply XY compensation of -0.06mm AND scale factor of 100.5% for best results.
+    </div>
+  </div>
+
+  <!-- TAB: Notes -->
+  <div class="tab-panel" id="tab-notes">
+    <div class="note-entry">
+      <div class="note-header">
+        <span class="note-date">2026-04-09</span>
+        <span class="note-tag note-tag-success">Success</span>
+      </div>
+      <div class="note-text">Dialed in exposure at 2.1s with Cones of Calibration — all pass cones clean, all fail cones separated. Very happy with surface quality at this setting.</div>
+    </div>
+    <div class="note-entry">
+      <div class="note-header">
+        <span class="note-date">2026-04-08</span>
+        <span class="note-tag note-tag-failure">Failure</span>
+      </div>
+      <div class="note-text">Lift speed at 240mm/m caused layer separation on the roller carriage print. Visible delamination around the bearing mount area. Dropped back to 180mm/m and re-ran successfully.</div>
+    </div>
+    <div class="note-entry">
+      <div class="note-header">
+        <span class="note-date">2026-04-07</span>
+        <span class="note-tag note-tag-observation">Observation</span>
+      </div>
+      <div class="note-text">Corners of the build plate consistently reading +0.14mm XY compared to center. Likely LCD vignetting. Will try UVTools per-zone compensation next.</div>
+    </div>
+    <div class="note-entry">
+      <div class="note-header">
+        <span class="note-date">2026-04-05</span>
+        <span class="note-tag note-tag-observation">Observation</span>
+      </div>
+      <div class="note-text">Ambient temp in workshop was 18°C — noticed slight adhesion issues. Enabled vat heating to 28°C and problems went away. Need to always preheat below 20°C.</div>
+    </div>
+
+    <div class="add-note-area">
+      <textarea class="note-textarea" placeholder="Add a note about this resin profile..."></textarea>
+      <div class="note-controls">
+        <select class="tag-select">
+          <option>Observation</option>
+          <option>Success</option>
+          <option>Failure</option>
+        </select>
+        <button class="btn btn-primary" style="margin-left: auto;">Add note</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PAGE: WIZARD V2 -->
+<div class="page" id="page-wizard">
+  <div class="wiz-back" onclick="showPage('profile')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to profile
+  </div>
+
+  <div class="wiz-banner">
+    <svg class="wiz-banner-dots" viewBox="0 0 400 120" id="wizDots2"></svg>
+    <div class="wiz-banner-content">
+      <div class="wiz-title">Calibration wizard</div>
+      <div class="wiz-sub">Siraya Tech ABS-Like · 0.05mm layer height</div>
+      <div class="wiz-progress">
+        <div class="wiz-progress-bar"><div class="wiz-progress-fill" id="wizProgressBar" style="width:0%"></div></div>
+        <div class="wiz-progress-label"><span id="wizProgressText">Step 1 of 8</span><span id="wizProgressPct">0%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Intro card - shown when wizard first opens -->
+  <div id="wizIntro" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;line-height:1.7">
+    <div style="font-size:18px;font-weight:700;margin-bottom:8px">How this works</div>
+    <div style="font-size:15px;color:var(--text2)">
+      This wizard walks you through calibrating your resin from scratch. Each step builds on the last — you can't skip ahead because later steps depend on earlier ones being locked in.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:7px;background:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div><div style="font-size:14px;font-weight:600">Download test files</div><div style="font-size:13px;color:var(--text3)">Each step links to the STL or pre-sliced file you need to print</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:7px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div><div style="font-size:14px;font-weight:600">Enter your results</div><div style="font-size:13px;color:var(--text3)">Punch in measurements and observations after each test print</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:7px;background:var(--amber);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+        </div>
+        <div><div style="font-size:14px;font-weight:600">Get recommendations</div><div style="font-size:13px;color:var(--text3)">The engine analyzes your data and tells you what to adjust</div></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;text-align:right">
+      <button class="wiz-btn wiz-btn-primary" onclick="document.getElementById('wizIntro').style.display='none'">Got it — let's go</button>
+    </div>
+  </div>
+
+  <div class="wiz-steps" id="wizSteps">
+    <!-- Steps are rendered by JS -->
+  </div>
+</div>
+<!-- MODAL: Add Resin -->
+<div class="modal-overlay" id="addResinModal">
+  <div class="modal">
+    <div class="modal-title">Add new resin</div>
+    <div class="modal-sub">Create a new resin entry in your library</div>
+    <div class="form-field">
+      <label class="form-label">Resin name</label>
+      <input class="form-input" placeholder="e.g. Siraya Tech ABS-Like" />
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Brand</label>
+        <input class="form-input" placeholder="e.g. Siraya Tech" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Type</label>
+        <select class="form-select form-input">
+          <option>Standard</option>
+          <option>ABS-Like</option>
+          <option>High Speed</option>
+          <option>Flexible</option>
+          <option>Water Washable</option>
+          <option>Bio</option>
+          <option>Castable</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Color</label>
+        <input class="form-input" placeholder="e.g. Gray" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Initial layer height</label>
+        <select class="form-select form-input">
+          <option>0.05mm</option>
+          <option>0.03mm</option>
+          <option>0.025mm</option>
+          <option>0.10mm</option>
+          <option>Custom...</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes (optional)</label>
+      <textarea class="form-input" rows="3" placeholder="Purchase link, special handling notes, etc." style="resize:vertical;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="hideModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="hideModal(); showPage('profile');">Create &amp; start calibration</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Edit Resin Properties -->
+<div class="modal-overlay" id="editResinModal">
+  <div class="modal">
+    <div class="modal-title">Resin properties</div>
+    <div class="modal-sub">Edit resin details and physical properties</div>
+    <div class="form-field">
+      <label class="form-label">Resin name</label>
+      <input class="form-input" value="Siraya Tech ABS-Like" />
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Brand</label>
+        <input class="form-input" value="Siraya Tech" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Type</label>
+        <select class="form-select form-input">
+          <option>Standard</option>
+          <option selected>ABS-Like</option>
+          <option>High Speed</option>
+          <option>Flexible</option>
+          <option>Water Washable</option>
+          <option>Bio</option>
+          <option>Castable</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Resin color</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="color" value="#777777" style="width:40px;height:36px;border:1px solid var(--border);border-radius:6px;padding:2px;cursor:pointer;"/>
+          <input class="form-input" value="Gray" style="flex:1;"/>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Resin density</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input class="form-input" value="1.100" style="flex:1;font-family:var(--mono);"/>
+          <span style="font-size:15px;color:var(--text3);">g/ml</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Resin cost</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:15px;color:var(--text3);">$</span>
+          <input class="form-input" value="36.00" style="flex:1;font-family:var(--mono);"/>
+          <span style="font-size:15px;color:var(--text3);">/ kg</span>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Bottle size</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input class="form-input" value="1000" style="flex:1;font-family:var(--mono);"/>
+          <span style="font-size:15px;color:var(--text3);">g</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Purchase link</label>
+      <input class="form-input" placeholder="https://..." />
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes</label>
+      <textarea class="form-input" rows="3" style="resize:vertical;">Best general-purpose engineering resin. Mix with 15-25% Tenacious for improved snap-fit durability.</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="hideEditModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="hideEditModal()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="scripts/ui-core.js"></script>
+<script src="scripts/wizard-engine.js"></script>
+<script src="scripts/bootstrap.js"></script>
+
+<!-- DATA BAR -->
+<div class="data-bar">
+  <div class="data-bar-status">
+    <div class="data-bar-dot" id="saveIndicator"></div>
+    <span id="saveStatus">Data saved locally</span>
+  </div>
+  <button class="data-bar-btn" onclick="exportJSON()">Export JSON</button>
+  <button class="data-bar-btn" onclick="importJSON()">Import</button>
+  <button class="data-bar-btn danger" onclick="clearAllData()">Reset all</button>
+</div>
+
+</body>
+</html>
