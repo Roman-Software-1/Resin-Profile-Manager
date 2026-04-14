@@ -1,0 +1,14 @@
+{
+  "name": "resin-profile-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static Resin Profile Manager web app",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.10"
+  }
+}
