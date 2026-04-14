@@ -18,15 +18,16 @@ npm run preview
 
 ## GitHub Pages hosting
 
-This repo includes `.github/workflows/deploy-pages.yml` to deploy automatically on every push to `main`.
-
-If this is the first deployment:
+Use the built-in branch deploy mode (simplest setup for this static app).
 
 1. Open repository **Settings** -> **Pages**
-2. Set **Source** to **GitHub Actions**
-3. Save
+2. Under **Build and deployment** set:
+   - **Source**: `Deploy from a branch`
+   - **Branch**: `main`
+   - **Folder**: `/ (root)`
+3. Click **Save**
 
-The site will then publish from Actions runs.
+GitHub Pages will publish directly from `index.html` in the root.
 
 Expected site URL:
 
