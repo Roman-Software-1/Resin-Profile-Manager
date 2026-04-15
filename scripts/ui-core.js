@@ -2,17 +2,239 @@
 // PERSISTENCE LAYER
 // ==========================================
 var STORE_KEY = 'resinlab_v1';
+var CLOUD_CONFIG_KEY = 'resinlab_cloud_cfg_v1';
+var CLOUD_STATE_TABLE = 'resinlab_profiles';
+var cloudClient = null;
+var cloudEnabled = false;
+var cloudAutoSync = true;
+var cloudSaveTimer = null;
+
+function buildStateData() {
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    wizard: { currentStep: WIZ.currentStep, data: WIZ.data },
+    notes: getNotes(),
+    slicerSettings: getSlicerInputs()
+  };
+}
+
+function applyStateData(data) {
+  if (!data || typeof data !== 'object') return false;
+  if (data.wizard) {
+    WIZ.currentStep = data.wizard.currentStep || 0;
+    if (data.wizard.data) {
+      Object.keys(data.wizard.data).forEach(function(k) {
+        WIZ.data[k] = data.wizard.data[k];
+      });
+    }
+  }
+  if (data.notes) restoreNotes(data.notes);
+  if (data.slicerSettings) restoreSlicerInputs(data.slicerSettings);
+  return true;
+}
+
+function updateSaveStatus(text, isError) {
+  var statusEl = document.getElementById('saveStatus');
+  var dot = document.getElementById('saveIndicator');
+  if (statusEl && text) statusEl.textContent = text;
+  if (dot) {
+    dot.style.background = isError ? 'var(--red)' : 'var(--green)';
+  }
+}
+
+function formatSavedAt(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function refreshLastSavedStatus() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    var parsed = JSON.parse(raw);
+    if (parsed && parsed.savedAt) {
+      updateSaveStatus('Last saved: ' + formatSavedAt(parsed.savedAt), false);
+    }
+  } catch (e) {}
+}
+
+function updateCloudStatusBadge(text) {
+  var el = document.getElementById('cloudStatus');
+  if (el && text) el.textContent = text;
+}
+
+function readCloudConfig() {
+  var inlineCfg = window.RESINLAB_CLOUD || {};
+  var localCfg = {};
+  try {
+    localCfg = JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY) || '{}');
+  } catch (e) {}
+  return {
+    supabaseUrl: (localCfg.supabaseUrl || inlineCfg.supabaseUrl || '').trim(),
+    supabaseAnonKey: (localCfg.supabaseAnonKey || inlineCfg.supabaseAnonKey || '').trim(),
+    autoSync: localCfg.autoSync !== undefined ? !!localCfg.autoSync : inlineCfg.autoSync !== false
+  };
+}
+
+function persistCloudConfig(cfg) {
+  localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify({
+    supabaseUrl: (cfg.supabaseUrl || '').trim(),
+    supabaseAnonKey: (cfg.supabaseAnonKey || '').trim(),
+    autoSync: cfg.autoSync !== false
+  }));
+}
+
+function initCloudSync() {
+  var cfg = readCloudConfig();
+  cloudAutoSync = cfg.autoSync !== false;
+  if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
+    cloudEnabled = false;
+    cloudClient = null;
+    updateCloudStatusBadge('Cloud off');
+    return false;
+  }
+  if (!(window.supabase && window.supabase.createClient)) {
+    updateCloudStatusBadge('Cloud SDK missing');
+    return false;
+  }
+  try {
+    cloudClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+    cloudEnabled = true;
+    updateCloudStatusBadge('Cloud ready');
+    cloudClient.auth.onAuthStateChange(function(event, session) {
+      if (event === 'SIGNED_IN' && session && session.user) {
+        updateCloudStatusBadge('Cloud user: ' + (session.user.email || 'signed in'));
+        cloudLoadState(false).then(function(usedCloud) {
+          if (usedCloud) {
+            wizInit();
+            tolUpdate();
+          }
+        });
+      } else if (event === 'SIGNED_OUT') {
+        updateCloudStatusBadge('Cloud signed out');
+      }
+    });
+    return true;
+  } catch (err) {
+    cloudEnabled = false;
+    cloudClient = null;
+    updateCloudStatusBadge('Cloud init failed');
+    console.warn('Cloud init failed:', err);
+    return false;
+  }
+}
+
+async function cloudGetSession() {
+  if (!cloudEnabled || !cloudClient) return null;
+  var res = await cloudClient.auth.getSession();
+  if (res.error) throw res.error;
+  return res.data && res.data.session ? res.data.session : null;
+}
+
+async function cloudEnsureSession(interactive) {
+  var session = await cloudGetSession();
+  if (session) {
+    updateCloudStatusBadge('Cloud user: ' + (session.user.email || 'signed in'));
+    return session;
+  }
+  if (!interactive) {
+    updateCloudStatusBadge('Cloud not signed in');
+    return null;
+  }
+  var email = prompt('Enter your email for cloud sync sign-in (magic link):');
+  if (!email) return null;
+  var redirectTo = window.location.origin + window.location.pathname;
+  var signInRes = await cloudClient.auth.signInWithOtp({
+    email: email.trim(),
+    options: { emailRedirectTo: redirectTo }
+  });
+  if (signInRes.error) throw signInRes.error;
+  updateCloudStatusBadge('Check email for sign-in link');
+  showToast('Magic link sent. Open it to finish cloud sign-in.');
+  return null;
+}
+
+function isCloudNewer(cloudIso, localIso) {
+  var cloudTs = Date.parse(cloudIso || '');
+  var localTs = Date.parse(localIso || '');
+  if (isNaN(cloudTs)) return false;
+  if (isNaN(localTs)) return true;
+  return cloudTs > localTs;
+}
+
+async function cloudLoadState(preferCloud) {
+  if (!cloudEnabled || !cloudClient) return false;
+  try {
+    var session = await cloudEnsureSession(false);
+    if (!session) return false;
+    var q = await cloudClient
+      .from(CLOUD_STATE_TABLE)
+      .select('payload, updated_at')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+    if (q.error) throw q.error;
+    if (!q.data || !q.data.payload) {
+      updateCloudStatusBadge('Cloud connected (no data yet)');
+      return false;
+    }
+
+    var localRaw = localStorage.getItem(STORE_KEY);
+    var localState = localRaw ? JSON.parse(localRaw) : null;
+    var useCloud = !!preferCloud || isCloudNewer(q.data.updated_at, localState && localState.savedAt);
+    if (useCloud) {
+      applyStateData(q.data.payload);
+      localStorage.setItem(STORE_KEY, JSON.stringify(q.data.payload));
+      showToast('Loaded newest cloud data');
+    }
+    updateCloudStatusBadge('Cloud synced');
+    return useCloud;
+  } catch (err) {
+    console.warn('Cloud load failed:', err);
+    updateCloudStatusBadge('Cloud error');
+    return false;
+  }
+}
+
+async function cloudSaveState(data, interactive) {
+  if (!cloudEnabled || !cloudClient) return false;
+  try {
+    var session = await cloudEnsureSession(!!interactive);
+    if (!session) return false;
+    var upsertRes = await cloudClient
+      .from(CLOUD_STATE_TABLE)
+      .upsert({
+        user_id: session.user.id,
+        payload: data,
+        updated_at: data.savedAt || new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    if (upsertRes.error) throw upsertRes.error;
+    updateCloudStatusBadge('Cloud synced');
+    updateSaveStatus('Saved locally + cloud', false);
+    return true;
+  } catch (err) {
+    console.warn('Cloud save failed:', err);
+    updateCloudStatusBadge('Cloud save failed');
+    return false;
+  }
+}
+
+function cloudQueueSave(data) {
+  if (!cloudEnabled || !cloudAutoSync) return;
+  if (cloudSaveTimer) clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(function() {
+    cloudSaveState(data, false);
+  }, 900);
+}
 
 function saveAll() {
   try {
-    var data = {
-      version: 1,
-      savedAt: new Date().toISOString(),
-      wizard: { currentStep: WIZ.currentStep, data: WIZ.data },
-      notes: getNotes(),
-      slicerSettings: getSlicerInputs()
-    };
+    var data = buildStateData();
     localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    updateSaveStatus('Last saved: ' + formatSavedAt(data.savedAt), false);
+    cloudQueueSave(data);
   } catch(e) { console.warn('Save failed:', e); }
 }
 
@@ -21,29 +243,14 @@ function loadAll() {
     var raw = localStorage.getItem(STORE_KEY);
     if (!raw) return false;
     var data = JSON.parse(raw);
-    if (data.wizard) {
-      WIZ.currentStep = data.wizard.currentStep || 0;
-      if (data.wizard.data) {
-        Object.keys(data.wizard.data).forEach(function(k) {
-          WIZ.data[k] = data.wizard.data[k];
-        });
-      }
-    }
-    if (data.notes) restoreNotes(data.notes);
-    if (data.slicerSettings) restoreSlicerInputs(data.slicerSettings);
-    return true;
+    return applyStateData(data);
   } catch(e) { console.warn('Load failed:', e); return false; }
 }
 
 function exportJSON() {
-  var data = {
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    printer: 'Anycubic Photon M7 Pro',
-    wizard: { currentStep: WIZ.currentStep, data: WIZ.data },
-    notes: getNotes(),
-    slicerSettings: getSlicerInputs()
-  };
+  var data = buildStateData();
+  data.exportedAt = new Date().toISOString();
+  data.printer = 'Anycubic Photon M7 Pro';
   var blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
@@ -68,16 +275,7 @@ function importJSON() {
       try {
         var data = JSON.parse(ev.target.result);
         if (!data.version) { showToast('Invalid backup file', true); return; }
-        if (data.wizard) {
-          WIZ.currentStep = data.wizard.currentStep || 0;
-          if (data.wizard.data) {
-            Object.keys(data.wizard.data).forEach(function(k) {
-              WIZ.data[k] = data.wizard.data[k];
-            });
-          }
-        }
-        if (data.notes) restoreNotes(data.notes);
-        if (data.slicerSettings) restoreSlicerInputs(data.slicerSettings);
+        applyStateData(data);
         saveAll();
         wizInit();
         showToast('Data imported — ' + (data.exportedAt ? 'from ' + data.exportedAt.slice(0,10) : 'success'));
@@ -88,9 +286,20 @@ function importJSON() {
   input.click();
 }
 
-function clearAllData() {
+async function clearAllData() {
   if (!confirm('This will erase ALL your calibration data, notes, and wizard progress. Are you sure?')) return;
   if (!confirm('Really? This cannot be undone.')) return;
+  try {
+    if (cloudEnabled && cloudClient) {
+      var session = await cloudEnsureSession(false);
+      if (session) {
+        var delRes = await cloudClient.from(CLOUD_STATE_TABLE).delete().eq('user_id', session.user.id);
+        if (delRes.error) console.warn('Cloud delete failed:', delRes.error);
+      }
+    }
+  } catch (e) {
+    console.warn('Cloud clear failed:', e);
+  }
   localStorage.removeItem(STORE_KEY);
   location.reload();
 }
@@ -135,6 +344,62 @@ function restoreSlicerInputs(settings) {
 
 // Auto-save on any wizard data change
 function wizSave() { saveAll(); }
+
+async function setupCloudSync() {
+  var existing = readCloudConfig();
+  var url = prompt('Supabase project URL (https://YOUR_PROJECT.supabase.co):', existing.supabaseUrl || '');
+  if (url === null) return;
+  var anonKey = prompt('Supabase publishable/anon key:', existing.supabaseAnonKey || '');
+  if (anonKey === null) return;
+  persistCloudConfig({
+    supabaseUrl: (url || '').trim(),
+    supabaseAnonKey: (anonKey || '').trim(),
+    autoSync: true
+  });
+  var ok = initCloudSync();
+  if (!ok) {
+    showToast('Cloud setup saved, but initialization failed', true);
+    return;
+  }
+  showToast('Cloud config saved');
+  await cloudSignIn();
+}
+
+async function cloudSignIn() {
+  if (!cloudEnabled) {
+    initCloudSync();
+  }
+  if (!cloudEnabled) {
+    showToast('Set up cloud first', true);
+    return;
+  }
+  try {
+    var session = await cloudEnsureSession(true);
+    if (session) {
+      updateCloudStatusBadge('Cloud user: ' + (session.user.email || 'signed in'));
+      var usedCloud = await cloudLoadState(false);
+      if (usedCloud) {
+        wizInit();
+        tolUpdate();
+      }
+      showToast('Cloud sign-in active');
+    }
+  } catch (err) {
+    showToast('Cloud sign-in failed: ' + err.message, true);
+  }
+}
+
+async function syncNow() {
+  try {
+    saveAll();
+    var data = buildStateData();
+    var ok = await cloudSaveState(data, true);
+    if (ok) showToast('Cloud sync complete');
+    else showToast('Cloud sync pending sign-in');
+  } catch (err) {
+    showToast('Cloud sync failed: ' + err.message, true);
+  }
+}
 
 // Toast notification
 function showToast(msg, isError) {

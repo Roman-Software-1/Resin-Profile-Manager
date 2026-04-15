@@ -908,6 +908,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="scripts/cloud-config.js"></script>
 <script src="scripts/ui-core.js"></script>
 <script src="scripts/wizard-engine.js"></script>
 <script src="scripts/bootstrap.js"></script>
@@ -918,6 +920,10 @@
     <div class="data-bar-dot" id="saveIndicator"></div>
     <span id="saveStatus">Data saved locally</span>
   </div>
+  <button class="data-bar-btn" onclick="setupCloudSync()">Cloud setup</button>
+  <button class="data-bar-btn" onclick="cloudSignIn()">Cloud sign in</button>
+  <button class="data-bar-btn" onclick="syncNow()">Sync now</button>
+  <button class="data-bar-btn" id="cloudStatus" style="cursor:default;">Cloud off</button>
   <button class="data-bar-btn" onclick="exportJSON()">Export JSON</button>
   <button class="data-bar-btn" onclick="importJSON()">Import</button>
   <button class="data-bar-btn danger" onclick="clearAllData()">Reset all</button>
